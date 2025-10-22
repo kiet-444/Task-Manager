@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@n
 import { TaskService } from './task.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { Request } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @ApiTags('Task')
@@ -14,6 +15,49 @@ export class TaskController {
   create(@Body() createTaskDto: CreateTaskDto) {
     return this.taskService.create(createTaskDto);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':taskId/accept')
+  async acceptTask(@Param('taskId') taskId: string, @Request() req: any) {
+    const userId = req.user.id;
+    return this.taskService.acceptTask(Number(taskId), userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':taskId/cancel')
+  async cancelTask(@Param('taskId') taskId: string, @Request() req: any) {
+    const userId = req.user.id;
+    return this.taskService.cancelTask(Number(taskId), userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':taskId/complete')
+  async completeTask(@Param('taskId') taskId: string, @Request() req: any) {
+    const userId = req.user.id;
+    return this.taskService.completeTask(Number(taskId), userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('available')
+  async getAvailableTasks(@Request() req: any) {
+    const userId = req.user.id;
+    return this.taskService.getAvailableTasks(userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('my')
+  async getMyTasks(@Request() req: any) {
+    const userId = req.user.id;
+    return this.taskService.getMyTasks(userId);
+  }
+
+  @UseGuards(JwtAuthGuard) 
+  @Get('completed')
+  async getCompletedTasks(@Request() req: any) {
+    const userId = req.user.id;
+    return this.taskService.getCompletedTasks(userId);
+  }
+  
 
   @Get()
   findAll() {
