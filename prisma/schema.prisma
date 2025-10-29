@@ -29,8 +29,9 @@ model User {
   updatedAt DateTime @updatedAt
 
   //relationship with task assigned to user
-  createdTasks  Task[] @relation("CreatedTasks")
-  assignedTasks Task[] @relation("AssignedTasks")
+  createdTasks  Task[]    @relation("CreatedTasks")
+  assignedTasks Task[]    @relation("AssignedTasks")
+  Comment       Comment[]
 }
 
 model Task {
@@ -45,12 +46,21 @@ model Task {
   userId Int
   user   User @relation("CreatedTasks", fields: [userId], references: [id])
 
+  priority TaskPriority @default(LOW)
+
   //relationship with task assigned to users
   assignedToId Int?
   assignedTo   User? @relation("AssignedTasks", fields: [assignedToId], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Comment   Comment[]
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HARD
 }
 
 enum TaskStatus {
@@ -60,4 +70,16 @@ enum TaskStatus {
   TODO
   DONE
   CANCELLED
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  //relationship with task
+  taskId    Int
+  task      Task     @relation(fields: [taskId], references: [id])
+  //relationship with user
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
 }

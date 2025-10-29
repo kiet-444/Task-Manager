@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { TaskStatus } from '@prisma/client';
+import { TaskPriority } from '@prisma/client';
 
 export class CreateTaskDto {
     @ApiProperty({ example: 'Task title', description: 'The title of the task' })
@@ -21,6 +22,10 @@ export class CreateTaskDto {
     @IsOptional()
     @IsEnum(TaskStatus)
     status?: TaskStatus;
+
+    @ApiProperty({description: 'The priority of the task',example: 'Low'})
+    @IsOptional()
+    priority?: TaskPriority; 
     
     @ApiProperty({ example: 1, description: 'The ID of the user who owns the task' })
     @IsNotEmpty()

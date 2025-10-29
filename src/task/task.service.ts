@@ -5,6 +5,7 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 import { DatabaseService } from '../database/database.service';
 
 
+
 @Injectable()
 export class TaskService {
   constructor( private databaseService: DatabaseService ) {}
@@ -15,7 +16,8 @@ export class TaskService {
         title: createTaskDto.title,
         description: createTaskDto.description,
         dueDate: createTaskDto.dueDate,
-        status: createTaskDto.status,
+        status: createTaskDto.status ?? 'TODO',
+        priority: createTaskDto.priority ?? 'MEDIUM',
         completed: false,
         user: { connect: { id: createTaskDto.userId } }, // Associate task with user
       },
@@ -92,6 +94,19 @@ export class TaskService {
       include: { user: true },
     });
   }
+
+  async filterByPriority(priority: string) {
+  return this.databaseService.task.findMany({
+    where: { priority: priority as any },
+    orderBy: { dueDate: 'asc' },
+  });
+}
+
+  async sortByDueDate(order: 'asc' | 'desc' = 'asc') {
+  return this.databaseService.task.findMany({
+    orderBy: { dueDate: order },
+  });
+}
 
   findOne(id: number) {
     return this.databaseService.task.findUnique({

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { TaskService } from './task.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { ApiTags } from '@nestjs/swagger';
@@ -57,8 +57,17 @@ export class TaskController {
     const userId = req.user.id;
     return this.taskService.getCompletedTasks(userId);
   }
-  
 
+  @Get('filter')
+  async filterByPriority(@Query('priority') priority: string) {
+    return this.taskService.filterByPriority(priority);
+  }
+
+  @Get('sort')
+  async sortByDueDate(@Query('order') order: 'asc' | 'desc' = 'asc') {
+    return this.taskService.sortByDueDate(order);
+  }
+  
   @Get()
   findAll() {
     return this.taskService.findAll();

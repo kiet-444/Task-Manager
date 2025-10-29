@@ -7,10 +7,12 @@ import { TaskModule } from './task/task.module';
 import { AuthModule } from './auth/auth.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { RemindersModule } from './reminders/reminders.module';
+import { CommentsModule } from './comments/comments.module';
+
 
 
 @Module({
-  imports: [DatabaseModule, UserModule, TaskModule, AuthModule, ScheduleModule.forRoot(), RemindersModule],
+  imports: [DatabaseModule, UserModule, TaskModule, AuthModule, ScheduleModule.forRoot(), RemindersModule, CommentsModule],
   controllers: [AppController],
   providers: [AppService],
 })
