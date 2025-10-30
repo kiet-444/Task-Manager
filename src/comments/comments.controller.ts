@@ -10,7 +10,11 @@ export class CommentsController {
   create(@Body() createCommentDto: CreateCommentDto) {
     return this.commentsService.create(createCommentDto);
   }
-
+  @Get('comment/:id')
+  getCommentById(@Param('id') id: string) {
+    return this.commentsService.getCommentById(+id);
+  }
+  
   @Get('task/:taskId')
   findAllByTask(@Param('taskId') taskId: string) {
     return this.commentsService.findAllByTask(+taskId);

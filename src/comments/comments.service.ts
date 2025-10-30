@@ -7,30 +7,69 @@ export class CommentsService {
   constructor(private readonly databaseService: DatabaseService) {}
 
   async create(createCommentDto: CreateCommentDto) {
+    const { content, userId, taskId, parentId } = createCommentDto;
+
     const task = await this.databaseService.task.findUnique({
-      where: { id: createCommentDto.taskId },
+      where: { id: taskId },
     });
     if (!task) throw new NotFoundException('Task not found');
 
+    if (createCommentDto.parentId) { // check if parent comment exists , if not throw error 
+      const parentComment = await this.databaseService.comment.findUnique({
+        where: { id: parentId },
+      });
+      if (!parentComment) throw new NotFoundException('Parent comment not found');
+    }
+
     return this.databaseService.comment.create({
       data: {
-        content: createCommentDto.content,
-        user: { connect: { id: createCommentDto.userId } },
-        task: { connect: { id: createCommentDto.taskId } },
+        content,
+        user: { connect: { id: userId } },
+        task: { connect: { id: taskId } },
+        ...(parentId && { parent: { connect: { id: parentId } } }), 
       },
-      include: { user: true },
+      include: {
+        user: { select: { id: true, name: true, email: true } },
+        parent: {
+          include: { user: { select: { id: true, name: true, email: true } } },
+        },
+      },
     });
   }
 
-  findAllByTask(taskId: number) {
+  async getCommentById(id: number) {
+    const comment = await this.databaseService.comment.findUnique({
+      where: { id },
+      include: {
+        user: true,
+        parent: true,
+        replies: {
+          include: { user: true },
+        },
+      },
+    });
+    if (!comment) throw new NotFoundException('Comment not found');
+    return comment;
+  }
+
+  async findAllByTask(taskId: number) {
     return this.databaseService.comment.findMany({
-      where: { taskId: taskId },
-      include: { user: { select: { name: true, email: true, id: true }} },
+      where: { taskId, parentId: null },
+      include: {
+        user: { select: { id: true, name: true, email: true } },
+        replies: {
+          include: {
+            user: { select: { id: true, name: true, email: true } },
+          },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
   }
 
-  remove(id: number) {
+  async remove(id: number) {
+    const comment = await this.databaseService.comment.findUnique({ where: { id } });
+    if (!comment) throw new NotFoundException('Comment not found');
     return this.databaseService.comment.delete({ where: { id } });
   }
 }
