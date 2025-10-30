@@ -73,17 +73,17 @@ enum TaskStatus {
 }
 
 model Comment {
-  id        Int       @id @default(autoincrement())
-  content   String
+  id      Int    @id @default(autoincrement())
+  content String
   //relationship with task
-  taskId    Int
-  task      Task      @relation(fields: [taskId], references: [id])
-  //relationship with user
+  taskId  Int
+  task    Task   @relation(fields: [taskId], references: [id])
+
   userId    Int
-  user      User      @relation(fields: [userId], references: [id])
-  createdAt DateTime  @default(now())
-  //relationship with reply
-  parentId  Int?
-  parent    Comment?  @relation("Reply", fields: [parentId], references: [id])
-  replies   Comment[] @relation("Reply")
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  parentId Int?
+  parent   Comment?  @relation("Reply", fields: [parentId], references: [id])
+  replies  Comment[] @relation("Reply")
 }
