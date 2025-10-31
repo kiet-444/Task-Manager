@@ -31,7 +31,9 @@ export class CommentsService {
       include: {
         user: { select: { id: true, name: true, email: true } },
         parent: {
-          include: { user: { select: { id: true, name: true, email: true } } },
+          include: { 
+             user: { select: {id: true} },
+           },
         },
       },
     });
