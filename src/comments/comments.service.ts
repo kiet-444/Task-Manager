@@ -14,7 +14,7 @@ export class CommentsService {
     });
     if (!task) throw new NotFoundException('Task not found');
 
-    if (createCommentDto.parentId) { // check if parent comment exists , if not throw error 
+    if (parentId) { // check if parent comment exists , if not throw error 
       const parentComment = await this.databaseService.comment.findUnique({
         where: { id: parentId },
       });
@@ -30,10 +30,11 @@ export class CommentsService {
       },
       include: {
         user: { select: { id: true, name: true, email: true } },
-        parent: {
-          include: { 
-             user: { select: {id: true} },
-           },
+        parent: { select: { id: true, content: true } },
+        replies: {
+          include: {
+            user: { select: { id: true, name: true, email: true } },
+        }
         },
       },
     });
