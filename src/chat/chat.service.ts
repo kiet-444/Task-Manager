@@ -6,6 +6,16 @@ export class ChatService {
   constructor(private prisma: DatabaseService) {}
 
   async createMessage(data: { senderId: number; conversationId: number; content: string }) {
+
+    let conversation = await this.prisma.conversation.findFirst({
+      where: { id: data.conversationId },
+    });
+    if (!conversation) {
+      conversation = await this.prisma.conversation.create({
+        data: { participants: { create: { userId: data.senderId } } },
+      });
+    }
+
     const message = await this.prisma.message.create({
       data: {
         senderId: data.senderId,
