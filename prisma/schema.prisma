@@ -10,7 +10,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // url      = env("DATABASE_URL")
 }
 
 // Uncomment the following block if you use Prisma <5.10
@@ -37,6 +37,7 @@ model User {
   projects           Project[]
   projectMembers     ProjectMember[]
   activities         Activity[]
+  projectAudits      ProjectAudit[]
 }
 
 model Task {
@@ -178,8 +179,10 @@ model Project {
 
   deletedAt DateTime?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  projectAudits ProjectAudit[]
+  activities    Activity[]
 }
 
 model ProjectMember {
@@ -192,6 +195,21 @@ model ProjectMember {
 
   role      Role     @default(VIEWER)
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProjectAudit {
+  id Int @id @default(autoincrement())
+
+  projectId Int
+  project   Project @relation(fields: [projectId], references: [id])
+
+  action    String
+  createdAt DateTime @default(now())
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
   updatedAt DateTime @updatedAt
 }
 
@@ -240,6 +258,9 @@ model Activity {
 
   action     String
   actionType ActivityAction @default(CREATE_TASK)
+
+  projectId Int?
+  project   Project? @relation(fields: [projectId], references: [id])
 
   taskId Int?
   task   Task? @relation(fields: [taskId], references: [id])

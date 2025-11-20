@@ -1,34 +1,77 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+
 import { ProjectService } from './project.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { ProjectRolesGuard } from './project.roles.guard';
+import { ProjectRoles } from './project.roles.decorator';
+import { DatabaseService } from 'src/database/database.service';
+import { Role } from '@prisma/client';
 
-@Controller('project')
+@Controller('projects')
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
 
   @Post()
-  create(@Body() createProjectDto: CreateProjectDto) {
-    return this.projectService.create(createProjectDto);
+  create(@Body() createProjectDto: CreateProjectDto, @Req() req) {
+    return this.projectService.create(createProjectDto, req.user.id);
   }
 
+  // Lấy project mà user là thành viên
   @Get()
-  findAll() {
-    return this.projectService.findAll();
+  async findAll(@Req() req) {
+    return this.projectService.findAll(req.user.id);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.projectService.findOne(+id);
+  async findOne(@Param('id') id: string, @Req() req) {
+    return this.projectService.findOne(+id, req.user.id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProjectDto: UpdateProjectDto) {
-    return this.projectService.update(+id, updateProjectDto);
+  @UseGuards(ProjectRolesGuard)
+  @ProjectRoles(Role.ADMIN)
+  update(
+    @Param('id') id: string,
+    @Body() updateProjectDto: UpdateProjectDto,
+    @Req() req,
+  ) {
+    return this.projectService.update(+id, req.user.id, updateProjectDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.projectService.remove(+id);
+  @UseGuards(ProjectRolesGuard)
+  @ProjectRoles(Role.ADMIN)
+  async remove(@Param('id') id: string, @Req() req) {
+    return this.projectService.remove(+id, req.user.id);
+  }
+
+  @Get(':id/members')
+  async getMembers(@Param('id') id: string, @Req() req) {
+    return this.projectService.getMember(+id, req.user.id);
+  }
+
+  @Post(':id/members')
+  @UseGuards(ProjectRolesGuard)
+  @ProjectRoles(Role.ADMIN)
+  async addMembers(@Param('id') id: string, @Req() req) {
+    return this.projectService.addMember(+id, req.user.id, req.body.members);
+  }
+
+  @Delete(':id/members')
+  @UseGuards(ProjectRolesGuard)
+  @ProjectRoles(Role.ADMIN)
+  async removeMembers(@Param('id') id: string, @Req() req) {
+    return this.projectService.removeMember(+id, req.user.id, req.body.members);
   }
 }
