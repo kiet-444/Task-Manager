@@ -38,6 +38,7 @@ model User {
   projectMembers     ProjectMember[]
   activities         Activity[]
   projectAudits      ProjectAudit[]
+  projectActivities  ProjectActivity[]
 }
 
 model Task {
@@ -179,10 +180,11 @@ model Project {
 
   deletedAt DateTime?
 
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  projectAudits ProjectAudit[]
-  activities    Activity[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  projectAudits     ProjectAudit[]
+  activities        Activity[]
+  projectActivities ProjectActivity[]
 }
 
 model ProjectMember {
@@ -265,7 +267,8 @@ model Activity {
   taskId Int?
   task   Task? @relation(fields: [taskId], references: [id])
 
-  createdAt DateTime @default(now())
+  createdAt         DateTime          @default(now())
+  projectActivities ProjectActivity[]
 }
 
 enum ActivityAction {
@@ -278,4 +281,27 @@ enum ActivityAction {
   CREATE_MESSAGE
   UPDATE_MESSAGE
   DELETE_MESSAGE
+}
+
+model ProjectActivity {
+  id Int @id @default(autoincrement())
+
+  projectId Int
+  project   Project @relation(fields: [projectId], references: [id])
+
+  email String
+  token String @unique
+  role  Role   @default(MEMBER)
+
+  expires DateTime
+  used    Boolean  @default(false)
+
+  createdById Int
+  createdBy   User @relation(fields: [createdById], references: [id])
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+  activity   Activity? @relation(fields: [activityId], references: [id])
+  activityId Int?
 }

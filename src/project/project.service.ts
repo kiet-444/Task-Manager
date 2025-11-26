@@ -194,7 +194,7 @@ export class ProjectService {
 }
 
 async removeMember(projectId: number, userId: number, memberId: number) {
-  
+
   const requester = await this.databaseService.projectMember.findFirst({
     where: { projectId, userId },
   });
@@ -203,7 +203,6 @@ async removeMember(projectId: number, userId: number, memberId: number) {
     throw new ForbiddenException('You are not an admin of this project');
   }
 
-  // 2. Kiểm tra xem member cần xóa có tồn tại trong project không
   const targetMember = await this.databaseService.projectMember.findFirst({
     where: { projectId, userId: memberId },
   });
@@ -212,7 +211,6 @@ async removeMember(projectId: number, userId: number, memberId: number) {
     throw new NotFoundException('Member not found in this project');
   }
 
-  // 3. Nếu xóa ADMIN → kiểm tra xem đây có phải ADMIN cuối
   if (targetMember.role === Role.ADMIN) {
     const adminCount = await this.databaseService.projectMember.count({
       where: { projectId, role: Role.ADMIN },
