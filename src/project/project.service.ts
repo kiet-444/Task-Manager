@@ -194,7 +194,7 @@ export class ProjectService {
 }
 
 async removeMember(projectId: number, userId: number, memberId: number) {
-  // 1. Kiểm tra user thực hiện request có phải ADMIN không
+  
   const requester = await this.databaseService.projectMember.findFirst({
     where: { projectId, userId },
   });
@@ -223,7 +223,7 @@ async removeMember(projectId: number, userId: number, memberId: number) {
     }
   }
 
-  // 4. Tiến hành xóa member
+  // DELETE MEMBER
   await this.databaseService.projectMember.delete({
     where: { id: targetMember.id },
   });
