@@ -10,11 +10,12 @@ import { RemindersModule } from './reminders/reminders.module';
 import { CommentsModule } from './comments/comments.module';
 import { ChatModule } from './chat/chat.module';
 import { ProjectModule } from './project/project.module';
+import { InviteModule } from './invite/invite.module';
 
 
 
 @Module({
-  imports: [DatabaseModule, UserModule, TaskModule, AuthModule, ScheduleModule.forRoot(), RemindersModule, CommentsModule, ChatModule, ProjectModule],
+  imports: [DatabaseModule, UserModule, TaskModule, AuthModule, ScheduleModule.forRoot(), RemindersModule, CommentsModule, ChatModule, ProjectModule, InviteModule],
   controllers: [AppController],
   providers: [AppService],
 })
