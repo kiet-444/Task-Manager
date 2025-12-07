@@ -10,7 +10,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  // url      = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
 // Uncomment the following block if you use Prisma <5.10
@@ -40,6 +40,7 @@ model User {
   projectAudits      ProjectAudit[]
   projectActivities  ProjectActivity[]
   projectInvites     ProjectInvite[]
+  auditLogs          AuditLog[]
 }
 
 model Task {
@@ -187,6 +188,7 @@ model Project {
   activities        Activity[]
   projectActivities ProjectActivity[]
   projectInvites    ProjectInvite[]
+  auditLogs         AuditLog[]
 }
 
 model ProjectMember {
@@ -325,4 +327,19 @@ model ProjectInvite {
   used      Boolean  @default(false)
 
   createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id Int @id @default(autoincrement())
+
+  projectId Int
+  userId    Int?
+
+  action String
+  meta   Json?
+
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id])
+  user    User?   @relation(fields: [userId], references: [id])
 }

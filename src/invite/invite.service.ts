@@ -1,7 +1,7 @@
+
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { CreateInviteDto } from './dto/create-invite.dto';
-import { UpdateInviteDto } from './dto/update-invite.dto';
-import { DatabaseService } from 'src/database/database.service';
+import { DatabaseService } from '../database/database.service';
 import { AcceptInviteDto } from './dto/accept-invite.dto';
 import { Prisma } from '@prisma/client';
 import {Role} from '@prisma/client'
@@ -22,14 +22,19 @@ export class InviteService {
       },
     });
     
-    const link = '${process.env.CLIENT_URL}/invite/accept/${token}';
+    const link = `${process.env.CLIENT_URL}/invite/accept/${token}`;
 
     await transporter.sendMail({
-      from: process.env.EMAIL,
-      to: email,
-      subject: 'Task Manager Invite',
-      text: `Please click the following link to accept the invite: ${link}`,
-    });
+    from: process.env.EMAIL,
+    to: email,
+    subject: 'Task Manager Invite',
+    html: `
+      <p>You have been invited to join a project.</p>
+      <p>Click the link below to accept the invitation:</p>
+      <a href="${link}">${link}</a>
+      <p>This link expires in 24 hours.</p>
+    `,
+  });
 
   }
 
@@ -110,6 +115,49 @@ export class InviteService {
 
     return { message: "Invite accepted successfully" };
   }
+
+  async resendInvite(projectId: number, userId: number, inviteId: number) {
+
+  const member = await this.databaseService.projectMember.findFirst({
+    where: { projectId, userId },
+  });
+
+  if (!member || member.role !== Role.ADMIN) {
+    throw new ForbiddenException('You are not an admin of this project');
+  }
+
+  const invite = await this.databaseService.projectInvite.findUnique({
+    where: { id: inviteId },
+  });
+
+  if (!invite) throw new NotFoundException('Invite not found');
+
+  // ensure invite.email exists
+  if (!invite.email) throw new BadRequestException('Invite has no email');
+
+  // ensure token and expiresAt are non-null and regenerate if missing/expired
+  let token = invite.token ?? randomBytes(32).toString('hex');
+  let expiresAt = invite.expiresAt ?? new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+  if (invite.expiresAt == null || invite.expiresAt < new Date()) {
+    token = randomBytes(32).toString('hex');
+    expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    await this.databaseService.projectInvite.update({
+      where: { id: inviteId },
+      data: { token, expiresAt },
+    });
+  }
+
+  await this.sendInviteEmail(invite.email, token);
+0
+  return {
+    message: 'Invite resent successfully',
+    email: invite.email,
+    token,
+  };
+}
+
 
   async removeInvite(projectId: number, userId: number) {
     const member = await this.databaseService.projectMember.findFirst({
