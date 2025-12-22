@@ -3,6 +3,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { DatabaseService } from '../database/database.service';
+import { Prisma } from '@prisma/client';
 
 
 
@@ -69,11 +70,53 @@ export class TaskService {
     if ((task as any).assignedToId !== userId)
       throw new BadRequestException('Task is not assigned to the user');
 
+    if (await this.isBlocked(taskId)) {
+      throw new BadRequestException('Task cannot be completed as it has incomplete dependencies');
+    }
+
     return this.databaseService.task.update({
       where: { id: taskId },
       data: ({ completed: true, status: 'COMPLETED' } as any),
     });
   }
+
+  async addDependency(taskId: number, dependsOnTaskId: number) {
+  if (taskId === dependsOnTaskId) {
+    throw new BadRequestException('A task cannot depend on itself');
+  }
+
+  const task = await this.databaseService.task.findUnique({
+    where: { id: taskId },
+  });
+  if (!task) throw new NotFoundException('Task not found');
+
+  const dependsOn = await this.databaseService.task.findUnique({
+    where: { id: dependsOnTaskId },
+  });
+  if (!dependsOn) throw new NotFoundException('Dependency task not found');
+
+  return this.databaseService.taskDependency.create({
+    data: {
+      taskId,
+      dependsOnId: dependsOnTaskId,
+    },
+  });
+}
+
+
+  async isBlocked(taskId: number): Promise<boolean> {
+  const dependency = await this.databaseService.taskDependency.findFirst({
+    where: {
+      taskId,
+      dependsOn: {
+        status: { not: 'DONE' },
+      },
+    },
+  });
+
+  return dependency !== null;
+}
+
 
   async getAvailableTasks(userId: number) {
     return this.databaseService.task.findMany({
