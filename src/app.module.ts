@@ -11,11 +11,12 @@ import { CommentsModule } from './comments/comments.module';
 import { ChatModule } from './chat/chat.module';
 import { ProjectModule } from './project/project.module';
 import { InviteModule } from './invite/invite.module';
+import { AuditModule } from './audit/audit.module';
 
 
 
 @Module({
-  imports: [DatabaseModule, UserModule, TaskModule, AuthModule, ScheduleModule.forRoot(), RemindersModule, CommentsModule, ChatModule, ProjectModule, InviteModule],
+  imports: [DatabaseModule, UserModule, TaskModule, AuthModule, ScheduleModule.forRoot(), RemindersModule, CommentsModule, ChatModule, ProjectModule, InviteModule, AuditModule],
   controllers: [AppController],
   providers: [AppService],
 })

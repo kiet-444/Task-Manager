@@ -27,7 +27,7 @@ export class ProjectController {
     return this.projectService.create(createProjectDto, req.user.id);
   }
 
-  // Lấy project mà user là thành viên
+  // get the project list of the logged in user
   @Get()
   async findAll(@Req() req) {
     return this.projectService.findAll(req.user.id);
