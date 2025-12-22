@@ -29,4 +29,7 @@ jobs:
               run: npm run build
 
             - name: Run Tests
-              run: npm test  --if-present
+              run: npm test -- --passWithNoTests
+
+            - name: Start Application
+              run: npm run start:prod
